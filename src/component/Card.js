@@ -1,16 +1,17 @@
 import { useNavigation } from '@react-navigation/native';
 import React from 'react';
+import Icon from 'react-native-vector-icons/Ionicons';
 import { StyleSheet, Text, View, Image, TouchableOpacity, ToastAndroid } from 'react-native';
 const Card = ({ item }) => {
-   
+    const navigation = useNavigation(); // Get the navigation object from React Navigation
+
     const showToast = () => {
-        ToastAndroid.show('Added to favorites!', ToastAndroid.SHORT); 
+        ToastAndroid.show('Added to favorites!', ToastAndroid.SHORT);
     };
     const addToCart = () => {
-        navigation.navigate('AddToCartScreen',{ productId: item.productId });
+        navigation.navigate('AddToCartScreen', { productId: item.productId });
         ToastAndroid.show('Added to Cart!', ToastAndroid.SHORT);
     };
-    const navigation = useNavigation(); // Get the navigation object from React Navigation
 
     const handleViewPress = () => {
         navigation.navigate('Details', { productId: item.productId });
@@ -21,13 +22,10 @@ const Card = ({ item }) => {
             <Image style={styles.cardImage} source={{ uri: item.imageUrl }} />
             <TouchableOpacity style={styles.wishBtn}
                 onPress={showToast}>
-                <Text style={{
-                    fontSize: 20,
-                    color: '#000'
-                }}>♡</Text>
+                <Icon name="heart-outline" size={20} color="#000" />
             </TouchableOpacity>
             <Text style={styles.cardName} numberOfLines={1}>{item.prodName}</Text>
-            <Text style={styles.cardPrice}>{item.price}</Text>
+            <Text style={styles.cardPrice}>₹{item.price}</Text>
             <View style={styles.innerContainer}>
                 <TouchableOpacity style={styles.btn1} onPress={handleViewPress}>
                     <Text style={styles.btnText}>View</Text>

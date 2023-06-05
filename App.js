@@ -1,19 +1,15 @@
-import React from 'react'
-import DrawerNavigator from './src/navigator/drawerNavigator/DrawerNavigator'
-import Navigator from './src/Navigator'
-import Slider from './src/screens/Slider'
-import Slider2 from './src/screens/Slider2'
-import SignUp from './src/screens/SignUp'
-import Login from './src/screens/Login'
+// App.js
+import React from 'react';
+import { Provider } from 'react-redux';
+import store from './src/redux/store/Store';
+import Navigator from './src/Navigator';
 
 const App = () => {
   return (
-  <Navigator/>
-  // <Slider/>
-  // <Slider2/>
-  // <SignUp/>
-  // <Login/>
-  )
-}
+    <Provider store={store}>
+      <Navigator />
+    </Provider>
+  );
+};
 
-export default App
+export default App;

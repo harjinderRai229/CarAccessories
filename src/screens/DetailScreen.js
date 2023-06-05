@@ -2,11 +2,13 @@ import React, { useEffect, useState } from 'react';
 import { StyleSheet, Text, View, Image, ActivityIndicator, TouchableOpacity, ScrollView } from 'react-native';
 import { SliderBox } from 'react-native-image-slider-box';
 import { useNavigation } from '@react-navigation/native';
-const API_URL = 'http://192.168.1.100:3000/accessories/productDetails'; // change in Utils
+import AsyncStorage from '@react-native-async-storage/async-storage';
+const API_URL = 'http://devcarapi.codezlab.com/accessories/productDetails'; // change in Utils
 
-const CardDetail = ({ 
+// const API_URL = 'http://192.168.1.100:3000/accessories/productList'; // tenda Ip address
+const CardDetail = ({
   route,
- }) => {
+}) => {
   const { productId } = route.params; // Get the product ID from the route parameters
   const [product, setProduct] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -21,6 +23,7 @@ const CardDetail = ({
         setProduct(responseJson.data[0]);
         setLoading(false);
         setSliderLoading(false);
+        console.log(responseJson.data[0])
       })
       .catch((error) => {
         console.error(error);
@@ -29,13 +32,42 @@ const CardDetail = ({
       });
   }, []);
 
+  // add here >>>>>>>>>>>>>>>>>>>>>>>>>>>
+  const navigateToHome = () => {
+    navigation.navigate('Home');
+  }
+  const navigateToLogin = () => {
+    navigation.navigate('Login');
+
+  }
+
+  const checkSession = async () => {
+    const accessToken = await AsyncStorage.getItem('accessToken');
+    const userId = await AsyncStorage.getItem('userId');
+
+    if (accessToken && userId) {
+      // Session exists, the user is logged in with a unique access token
+      // Perform the "Add to Cart" action or continue with the desired logic
+      navigateToHome()
+    } else {
+      // Session does not exist, the user is not logged in or the access token or user ID is missing
+      // Display a message or navigate to the login screen to prompt the user to log in
+      navigateToLogin()
+    }
+  };
+  // const handleAddToCart = () => {
+  //    // Call the session check function
+
+  //     // Perform the "Add to Cart" action or continue with the desired logic
+  // };
   const handleAddToCart = () => {
     // onAddToCart(product)
+    checkSession();
     navigation.navigate('AddToCartScreen', { product });
   };
   const handleAddToWishList = () => {
-    
-    navigation.navigate('AddToWishList', { product });
+
+    navigation.replace('AddToWishList', { product });
   };
 
   if (loading) {
@@ -73,8 +105,7 @@ const CardDetail = ({
         <View style={styles.contentContainer}>
           <Text style={styles.title}>{product.prodName}</Text>
           <Text style={styles.description}>{product.description}</Text>
-          <Text style={styles.price}>{product.price}</Text>
-
+          <Text style={styles.price}>₹{product.price}</Text>
           <View style={styles.quantityContainer}>
             <Text>Quantity:</Text>
             <View style={styles.quantityInput}>

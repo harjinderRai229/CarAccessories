@@ -1,17 +1,41 @@
-import { ADD_TO_CART, ADD_TO_WISHLIST, REMOVE_FROM_CART, REMOVE_FROM_WISHLIST } from '../ActionTypes';
-const Reducers = (state = [], action) => {
-  switch (action.type) {
-    case ADD_TO_CART:
-      return [...state, action.payload];
-    case REMOVE_FROM_CART:
-      const deletedArrary1 = state.filter((item, index) => {
-        return index !== action.payload;
-      });
-      return deletedArrary1;
+//Reducer.js
+import { LOGIN_SUCCESS, SIGNUP_SUCCESS, LOGOUT , SET_ACCESS_TOKEN, CLEAR_ACCESS_TOKEN} from '../ActionTypes';
 
+const initialState = {
+  loggedInUser: null,
+  isLoggedIn: false,
+  accessToken: '',
+};
+
+const Reducer = (state = initialState, action) => {
+  switch (action.type) {
+    case LOGIN_SUCCESS:
+    case SIGNUP_SUCCESS:
+      return {
+        ...state,
+        loggedInUser: action.payload,
+        isLoggedIn: true,
+      };
+    case LOGOUT:
+      return {
+        ...state,
+        loggedInUser: null,
+        isLoggedIn: false,
+        accessToken:'',
+      };
+      case SET_ACCESS_TOKEN:
+      return {
+        ...state,
+        accessToken: action.payload,
+      };
+    case CLEAR_ACCESS_TOKEN:
+      return {
+        ...state,
+        accessToken: null,
+      };
     default:
       return state;
   }
 };
 
-export default Reducers;
+export default Reducer;
