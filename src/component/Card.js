@@ -1,10 +1,15 @@
 import { useNavigation } from '@react-navigation/native';
-import React from 'react';
+import React, { useState } from 'react';
 import Icon from 'react-native-vector-icons/Ionicons';
 import { StyleSheet, Text, View, Image, TouchableOpacity, ToastAndroid } from 'react-native';
 const Card = ({ item }) => {
     const navigation = useNavigation(); // Get the navigation object from React Navigation
+    const [isFavorite, setIsFavorite] = useState(false);
 
+    const toggleFavorite = () => {
+        setIsFavorite(!isFavorite);
+        showToast();
+    };
     const showToast = () => {
         ToastAndroid.show('Added to favorites!', ToastAndroid.SHORT);
     };
@@ -20,9 +25,12 @@ const Card = ({ item }) => {
     return (
         <TouchableOpacity style={styles.cardContainer} onPress={handleViewPress}>
             <Image style={styles.cardImage} source={{ uri: item.imageUrl }} />
-            <TouchableOpacity style={styles.wishBtn}
-                onPress={showToast}>
-                <Icon name="heart-outline" size={20} color="#000" />
+            <TouchableOpacity style={styles.wishBtn} onPress={toggleFavorite}>
+                <Icon
+                    name={isFavorite ? 'heart' : 'heart-outline'}
+                    size={20}
+                    color={isFavorite ? '#FF0000' : '#000'}
+                />
             </TouchableOpacity>
             <Text style={styles.cardName} numberOfLines={1}>{item.prodName}</Text>
             <Text style={styles.cardPrice}>₹{item.price}</Text>

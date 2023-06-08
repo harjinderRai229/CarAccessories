@@ -1,22 +1,47 @@
-import React from 'react';
-import { StyleSheet, Text, View, TouchableOpacity, Linking, Image } from 'react-native';
+import React, { useContext } from 'react';
+import { StyleSheet, Text, View, TouchableOpacity, Linking, Image, Alert, ToastAndroid } from 'react-native';
 import { connect, useDispatch } from 'react-redux';
 import { logout } from '../../redux/action/Action'; // Replace with your actual logout action
+import { AuthContext } from '../../AuthContext';
+import { StackActions } from '@react-navigation/native';
 
 const DrawerContent = ({ navigation }) => {
-
-  const dispatch = useDispatch();
+  const { logout } = useContext(AuthContext);
+  const showToast = () => {
+    ToastAndroid.show('Logout', ToastAndroid.SHORT);
+  };
   const handleLogout = () => {
     // Call the logout action
-    dispatch(logout());
-    navigation.navigate('Login')
+    // const popAction = StackActions.pop();
+    Alert.alert(
+      'Confirmation',
+      'Are you sure you want to logout?',
+      [
+        {
+          text: 'Cancel',
+          style: 'cancel',
+          onPress: () => {
+            // Handle cancel action
+          }
+        },
+        {
+          text: 'OK',
+          onPress: () => { 
+            logout();
+            
+            navigation.replace('Login');
+            showToast();
+          }
+        }
+      ]
+    );
     // Perform any additional logic, such as navigating to the login screen
     // ...
   };
   const handleProfile = () => {
     // Call the logout action
     // logout();
-    navigation.navigate('test')
+    navigation.replace('test')
     // Perform any additional logic, such as navigating to the login screen
     // ...
   };
@@ -35,12 +60,12 @@ const DrawerContent = ({ navigation }) => {
       <View style={{
         paddingLeft: 10
       }}>
-        <TouchableOpacity style={styles.item} onPress={() => navigation.navigate('Login')}>
+        {/* <TouchableOpacity style={styles.item} onPress={() => navigation.replace('Login')}>
           <Text style={styles.itemText}>Login</Text>
         </TouchableOpacity>
-        <TouchableOpacity style={styles.item} onPress={() => navigation.navigate('SignUp')}>
+        <TouchableOpacity style={styles.item} onPress={() => navigation.replace('SignUp')}>
           <Text style={styles.itemText}>SignUp</Text>
-        </TouchableOpacity>
+        </TouchableOpacity> */}
         <TouchableOpacity style={styles.item} onPress={handleLogout}>
           <Text style={styles.itemText}>logout</Text>
         </TouchableOpacity>
@@ -77,4 +102,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default connect(null, { logout })(DrawerContent);
+export default DrawerContent;

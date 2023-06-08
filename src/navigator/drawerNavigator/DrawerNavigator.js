@@ -9,8 +9,8 @@ const DrawerNavigator = () => {
   return (
 
     <Drawer.Navigator drawerContent={(props) => <DrawerContent {...props} />} screenOptions={{
-      // headerShown:false
-      headerTitle: 'Car Accessories'
+      headerShown:false
+      // headerTitle: 'Car Accessories'
     }}>
      <Drawer.Screen name="Home" component={HomeScreen} options={{
                   //  headerTintColor:'#00f'

@@ -7,4 +7,6 @@
 
 
 
-## >>>>>>>>>>>>>    
+## >>>>>>>>>>>>>      android:networkSecurityConfig="@xml/network_security_config"    chage this for relesae
+
+## >>>>>>>>> devcarapi.codezlab.com/accessories/addToCart

@@ -1,11 +1,13 @@
 import { useNavigation } from '@react-navigation/native';
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useContext, useEffect, useRef, useState } from 'react';
 import { Alert, Image, StyleSheet, Text, TextInput, TouchableOpacity, View, Dimensions } from 'react-native';
 
+import { AuthContext } from '../AuthContext';
 const windowWidth = Dimensions.get('window').width;
-
-const OtpScreen = ({ route }) => {
-  const { userData } = route.params;
+ 
+ 
+const OtpScreen = () => {
+  const { user } = useContext(AuthContext);
   const navigation = useNavigation();
   const firstInput = useRef();
   const secondInput = useRef();
@@ -73,12 +75,12 @@ const OtpScreen = ({ route }) => {
   };
 
   const handleVerifyOtp = () => {
-    const otp = userData.otp
+    const otp = user.otp
     // Perform OTP verification logic here
-    if (otp === userData.otp) {
+    if (otp === user.otp) {
       Alert.alert('Success', 'OTP verified successfully');
       // Proceed to the next step after OTP verification
-      navigation.navigate('Drawer1');
+      navigation.replace('Drawer1');
       
       setTimer(30);
       setOtpResent(true);
@@ -106,7 +108,7 @@ const OtpScreen = ({ route }) => {
           <Text style={styles.descriptionText}>
             We will send you an otp on your register mobile number
           </Text>
-          <Text style={styles.titleText}> {userData.mobile_num}</Text>
+          <Text style={styles.titleText}> </Text>
         </View>
       </View>
 
@@ -172,8 +174,8 @@ const OtpScreen = ({ route }) => {
           />
         </View>
       </View>
-      <Text>
-        Hello {userData.fname} {userData.lname}! Your OTP is: {userData.otp}
+      <Text style={{color:"#000"}}>
+        Hello {user.fname} {user.lname}! Your OTP is: {user.otp}
       </Text>
       <View style={styles.timerContainer}>
         {/* <Text style={styles.timerText}>Time Remaining: {timer} s</Text> */}

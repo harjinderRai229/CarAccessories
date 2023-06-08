@@ -1,8 +1,9 @@
 import React, { useEffect } from 'react';
-import { View, Text, StyleSheet, Animated, Image } from 'react-native';
+import { View, Text, StyleSheet, Animated } from 'react-native';
 
 const SplashScreen = ({ navigation }) => {
   const logoOpacity = new Animated.Value(0);
+
 
   useEffect(() => {
     Animated.timing(logoOpacity, {
@@ -10,16 +11,16 @@ const SplashScreen = ({ navigation }) => {
       duration: 1500,
       useNativeDriver: true,
     }).start(() => {
-      navigation.replace('Drawer1');
+      navigation.replace('Login');
     });
   }, []);
 
   return (
     <View style={styles.container}>
       <Animated.Image
-      source={require('../assets/images/11.jpg')} 
-      resizeMode='contain'
-      style={[styles.logo, { opacity: logoOpacity }]}/>
+        source={require('../assets/images/11.jpg')}
+        resizeMode='contain'
+        style={[styles.logo, { opacity: logoOpacity }]} />
 
       <Text style={styles.subTitle}>Loading...</Text>
     </View>
@@ -35,8 +36,8 @@ const styles = StyleSheet.create({
   },
   logo: {
     marginBottom: 20,
-    width:"50%",
-    height:"50%"
+    width: "50%",
+    height: "50%"
   },
   subTitle: {
     fontSize: 20,

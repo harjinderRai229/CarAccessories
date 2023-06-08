@@ -1,10 +1,11 @@
 import React from 'react';
 import { Image, StyleSheet, TextInput, View } from 'react-native';
+import Icon from 'react-native-vector-icons/FontAwesome'; // Import the icon library of your choice
 
-const CustomTextInput = ({ value, onChangeText, placeholder, icon, type, keyboardType, maxLength }) => {
+const CustomTextInput = ({ value, onChangeText, placeholder, iconName, type, keyboardType, maxLength ,size ,color}) => {
   return (
     <View style={styles.container}>
-      <Image source={icon} style={styles.image} />
+      <Icon name={iconName} size={size} color={color}/>
       <TextInput
         style={styles.textInput}
         placeholder={placeholder}
@@ -19,6 +20,7 @@ const CustomTextInput = ({ value, onChangeText, placeholder, icon, type, keyboar
   );
 };
 
+
 export default CustomTextInput;
 
 const styles = StyleSheet.create({
@@ -26,7 +28,7 @@ const styles = StyleSheet.create({
     alignSelf: 'center',
     width: '85%',
     height: 58,
-    borderRadius: 10,
+    borderRadius: 6,
     borderWidth: 0.5,
     marginTop: 30,
     paddingLeft: 20,
@@ -41,6 +43,8 @@ const styles = StyleSheet.create({
   },
   textInput: {
     height: 45,
+    color:'black',
     width: '80%',
+    marginLeft:10
   },
 });

@@ -1,5 +1,8 @@
 import {
   ActivityIndicator,
+  Alert,
+  Image,
+  KeyboardAvoidingView,
   ScrollView,
   StatusBar,
   StyleSheet,
@@ -7,18 +10,15 @@ import {
   TouchableOpacity,
   View,
 } from 'react-native';
-import { useDispatch} from 'react-redux';
-import { setAccessToken } from '../redux/action/Action';
-import React, { useEffect, useState } from 'react';
+import React, { useContext, useEffect, useState } from 'react';
 import CustomTextInput from '../component/CustomTextInput';
 // import CommonButton from '../component/CommonButton';
 import { useNavigation } from '@react-navigation/native';
 import Button from '../component/Button';
-import AsyncStorage from '@react-native-async-storage/async-storage';
 import Icon from 'react-native-vector-icons/FontAwesome';
-import api from '../utils/api';
-const Login = ({ login }) => {
-  const dispatch = useDispatch();
+import { AuthContext } from '../AuthContext';
+const Login = () => {
+  const { login } = useContext(AuthContext);
   const navigation = useNavigation();
   const [mobileNum, setMobile] = useState('');
   const [password, setPassword] = useState('');
@@ -29,32 +29,36 @@ const Login = ({ login }) => {
   const [showPassword, setShowPassword] = useState(false);
   const validate = () => {
     if (mobileNum === '') {
+      setLoading(false);
       setBadMobileNum(true);
     } else if (!isValidMobileNumber(mobileNum)) {
       setBadMobileNum(true);
+      setLoading(false);
     } else {
+      setLoading(true);
       setBadMobileNum(false);
     }
-  
+
     if (password === '') {
       setBadPassword(true);
+      setLoading(false);
     } else if (password.length < 8 || !isStrongPassword(password)) {
       setBadPassword(true);
+      setLoading(false);
     } else {
+      setLoading(true);
       setBadPassword(false);
     }
-  
-    setLoading(true);
+
+    // setLoading(true);
     handleLogin();
   };
-  
+
   const isStrongPassword = (password) => {
     // Regular expressions to validate password strength
-    const specialCharPattern = /[@$!%*?&]/;
     const uppercasePattern = /[A-Z]/;
-    const lowercasePattern = /[a-z]/;
     const numberPattern = /[0-9]/;
-  
+
     return (
       password.length >= 8 &&
       // specialCharPattern.test(password) &&
@@ -63,72 +67,35 @@ const Login = ({ login }) => {
       numberPattern.test(password)
     );
   };
-  
+
 
 
   const handleLogin = async () => {
     try {
-      const response = await api.post('/user/login', {
-        mobile_num: mobileNum,
-        password,
-      });
+      if (mobileNum === '' || password === '') {
+        Alert.alert('Error', 'Please fill all fields.');
+        return;
+      }
 
-      const { accessToken, id, fname, lname, mobile_num } = response.data.data;
+      const response = await login(mobileNum, password);
 
-      const userObject = {
-        accessToken,
-        id,
-        fname,
-        lname,
-        mobile_num,
-      };
-  
-       const dataToken =await AsyncStorage.setItem('user', JSON.stringify(userObject));
-  
-      console.log(userObject.accessToken);
-      
-      dispatch(setAccessToken(userObject));
-      // Handle the response accordingly
-      // Alert.alert("login")
-      // lo();
-      // navigation.navigate('Drawer1')
-      // const accessToken = response.data.data.accessToken;
-      // const userId = response.data.data.id;
-      // await AsyncStorage.setItem('accessToken', accessToken);
-      // await AsyncStorage.setItem('userId', userId);
-      console.log(response.data);
-      // dispatch(setAccessToken(accessToken));
-      // api.defaults.headers.common['Authorization'] = `Bearer ${accessToken}`; // Set default headers
-      // setAccessToken(userObject.accessToken);
-      // setUserId(userId);
-      //change here some code 
-
-// const accessToken = useSelector((state) => state.accessToken);
-// console.log(accessToken);
-      // navigation.navigate('HomeScreen')
+      if (response.status === 1) {
+        // Login successful
+        // Do something after successful login
+        navigation.replace('Drawer1')
+        console.log('Login successful', response);
+        setLoading(true);
+      } else {
+        // Login failed
+        Alert.alert('Error', response.message);
+      }
     } catch (error) {
-      // Handle error
-      console.error(error);
-    } 
-    finally{
-      setLoading(false);
+      Alert.alert('Error', 'Failed to log in. Please try again.');
+      console.log(error);
     }
   };
-  const lo = () => {
-    navigation.navigate('SignUp')
-  }
 
-  const handleForgotPassword = () => {
-    // Handle forgot password logic here
-    console.log('Forgot password');
-  };
 
-  const handleCreateAccount = () => {
-    // Handle create account logic here
-    // navigation.navigate('SignUp');
-    console.log('Create account');
-
-  };
   const handleTogglePasswordVisibility = () => {
     setShowPassword(!showPassword);
   };
@@ -143,6 +110,7 @@ const Login = ({ login }) => {
     }
     return () => {
       clearTimeout(hideErrorTimeout);
+      setLoading(false);
     };
   }, [badPassword]);
   // const isValidEmail = email => {
@@ -181,113 +149,98 @@ const Login = ({ login }) => {
     return mobileNumberPattern.test(mobileNum);
   };
   return (
-    <ScrollView contentContainerStyle={styles.container}>
-      <StatusBar backgroundColor={'#2596be'} />
-      {/* <Image source={require('../assets/images/a2.png')} style={styles.img} /> */}
-      <Text style={styles.text}>Login</Text>
-      <CustomTextInput
-        placeholder={'Mobile number'}
-        value={mobileNum}
-        maxLength={10}
-        keyboardType={'number-pad'}
-        onChangeText={mobileNum => setMobile(mobileNum)}
-        icon={require('../assets/images/user.png')}
-        placeholderTextColor={'red'}
-      />
-      {badMobileNum && (
-        <Text
-          style={{
-            color: 'red',
-            marginTop: 10,
-            marginLeft: 40,
-            fontWeight: '800',
-          }}>
-          {isValidMobileNumber(mobileNum)
-            ? 'Please Enter Mobile number'
-            : 'Please Enter Valid Mobile number'}
-        </Text>
-      )}
-     <View style={{ width: '100%',}}>
-     <CustomTextInput
-        placeholder={'Password'}
-        value={password}
-        onChangeText={password => setPassword(password)}
-        type={'password' ?  !showPassword : showPassword}
-        icon={require('../assets/images/lock.png')}
-        placeholderTextColor={'red'}
-        
-      />
-       <TouchableOpacity
-        style={styles.passwordIcon}
-        onPress={handleTogglePasswordVisibility}
+    <ScrollView style={styles.container}>
+      <KeyboardAvoidingView
+        style={styles.container}
+        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
       >
-        <Icon
-          name={showPassword ? 'eye' : 'eye-slash'}
-          size={20}
-          color="gray"
+        <StatusBar backgroundColor={'#2596be'} />
+        <Image source={require('../assets/images/11.jpg')} style={styles.img} />
+        <View style={styles.header}>
+          <Text style={styles.text}>Login</Text>
+        </View>
+        <CustomTextInput
+          placeholder={'Mobile number'}
+          value={mobileNum}
+          maxLength={10}
+          keyboardType={'number-pad'}
+          iconName={'mobile'}
+          size={26}
+          color={"#000"}
+          onChangeText={mobileNum => setMobile(mobileNum)}
+          icon={require('../assets/images/user.png')}
+          placeholderTextColor={'red'}
         />
-      </TouchableOpacity>
-     </View>
-  {/* //   {badPassword && (
-  <View style={styles.errorContainer1}>
-    <Text style={styles.errorText1}>
-      Password must be at least 8 characters long and contain:
-    </Text>
-    {/* <Text style={styles.errorText1}>
-      - at least one special character
-    </Text> */}
-    {/* <Text style={styles.errorText1}>
-      - one uppercase letter
-    </Text> */}
-    {/* <Text style={styles.errorText1}>
-      - one lowercase letter
-    </Text> */}
-    {/* <Text style={styles.errorText1}>
-      - one numeric digit
-    </Text> */}
- {/* / </View> */}
-{/* )} */}
-{/* // */} 
+        {badMobileNum && (
+          <Text
+            style={{
+              color: 'red',
+              marginTop: 4,
+              marginLeft: 32,
+              fontSize: 12
+              // fontWeight: '800',
+            }}>
+            {isValidMobileNumber(mobileNum)
+              ? 'Please enter mobile number'
+              : 'Please enter valid mobile number'}
+          </Text>
+        )}
+        <View style={{ width: '100%', }}>
+          <CustomTextInput
+            placeholder={'Password'}
+            value={password}
+            onChangeText={password => setPassword(password)}
+            type={'password' ? !showPassword : showPassword}
+            iconName={'lock'}
+            size={26}
+            color={"#000"}
+            placeholderTextColor={'red'}
 
-      <View style={{
-        // alignItems:'flex-end'
-        // flexDirection:'row-reverse',
-        // position:'absolute',
-        // right:30,
-        // bottom:310
-        // top:5
-      }}>
-        <Text style={{
-          color: 'red'
-        }}>forgot password ?</Text>
-      </View>
-      <Button
-        title={'Login'}
-        bgColor={'#000'}
-        textColor={'#fff'}
-        onPress={validate}
-        disabled={loading}
-      />
-      {loading && <ActivityIndicator style={{ marginTop: 10 }} />}
-      <Text
-        style={[
-          styles.text,
-          {
-            fontSize: 18,
-            marginTop: 20,
-            textDecorationLine: 'underline',
-          },
-        ]}
-        onPress={() => {
-          navigation.navigate('SignUp');
-        }}>
-        Create New Account ?
-      </Text>
-      
+          />
+          <TouchableOpacity
+            style={styles.passwordIcon}
+            onPress={handleTogglePasswordVisibility}
+          >
+            <Icon
+              name={showPassword ? 'eye' : 'eye-slash'}
+              size={20}
+              color="gray"
+            />
+          </TouchableOpacity>
+          <TouchableOpacity style={{
+            marginRight: 28,
+          }}>
+            <Text style={{
+              color: 'blue',
+              textAlign: 'right',
+              marginTop: 3
+            }}>forgot password ?</Text>
+          </TouchableOpacity>
+        </View>
 
-      <Text>
-        {/* {accessToken} */}
-      </Text>
+        <Button
+          title={'Login'}
+          bgColor={'#000'}
+          textColor={'#fff'}
+          onPress={validate}
+          disabled={loading}
+        />
+        {loading && <ActivityIndicator style={{ marginTop: 10 }} />}
+        <Text
+          style={[
+            styles.text,
+            {
+              fontSize: 18,
+              marginTop: 20,
+              textDecorationLine: 'underline',
+            },
+          ]}
+          onPress={() => {
+            navigation.navigate('SignUp');
+          }}>
+          Create New Account ?
+        </Text>
+      </KeyboardAvoidingView>
     </ScrollView>
   );
 };
@@ -297,16 +250,27 @@ export default Login;
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    // backgroundColor: '#2596be',
+    backgroundColor: '#fff',
+  },
+  contentContainer: {
+    flex: 1,
+    width: '100%',
     alignItems: 'center',
-    justifyContent: 'center'
+    justifyContent: 'center',
+    padding: 20,
   },
   img: {
     width: 140,
     height: 140,
     alignSelf: 'center',
-    marginTop: 60,
+    marginTop: 50,
     borderRadius: 100,
+  },
+  header: {
+    width: '100%',
+    // backgroundColor: '#fd7e14',
+    alignItems: 'center',
+    paddingVertical: 20,
   },
   text: {
     marginTop: 30,
@@ -336,5 +300,17 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     fontStyle: 'italic',
     fontSize: 12,
+  },
+  passwordContainer: {
+    position: 'relative',
+    width: '100%',
+    flexDirection: 'row',
+    marginBottom: 10,
+  },
+  forgotPasswordLink: {
+    position: 'absolute',
+    bottom: -20,
+    right: 0,
+    marginVertical: 10,
   },
 });

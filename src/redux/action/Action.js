@@ -1,5 +1,6 @@
 // Actions.js
-import { LOGIN_SUCCESS, SIGNUP_SUCCESS, LOGOUT, SET_ACCESS_TOKEN, CLEAR_ACCESS_TOKEN } from '../ActionTypes';
+
+import { LOGIN_SUCCESS, SIGNUP_SUCCESS, LOGOUT, SET_ACCESS_TOKEN, CLEAR_ACCESS_TOKEN, SET_SESSION, CLEAR_SESSION } from '../ActionTypes';
 
 export const loginSuccess = (userData) => {
   return {
@@ -28,4 +29,13 @@ export const setAccessToken = (accessToken) => ({
 
 export const clearAccessToken = () => ({
   type: CLEAR_ACCESS_TOKEN,
+});
+
+export const setSession = (userObject) => ({
+  type: SET_SESSION,
+  payload: userObject,
+});
+
+export const clearSession = () => ({
+  type: CLEAR_SESSION,
 });

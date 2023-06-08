@@ -3,11 +3,6 @@ import React from 'react';
 
 const Button = ({ title, style, textStyle, onPress, bgColor ,textColor}) => {
     return (
-        // <View>
-        //     <TouchableOpacity onPress={onPress} style={[styles.container, style]}>
-        //         <Text style={[styles.text, textStyle]}>{title}</Text>
-        //     </TouchableOpacity>
-        // </View>
             <TouchableOpacity
             style={[styles.buttonStyle, { backgroundColor: bgColor }]}
             onPress={onPress}>
@@ -24,7 +19,7 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         width: "85%",
         height: 50,
-        borderRadius: 15,
+        borderRadius: 6,
         alignSelf: 'center',
         marginTop: 50,
     },

@@ -3,9 +3,7 @@ import { StyleSheet, Text, View, Image, ActivityIndicator, TouchableOpacity, Scr
 import { SliderBox } from 'react-native-image-slider-box';
 import { useNavigation } from '@react-navigation/native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-const API_URL = 'http://devcarapi.codezlab.com/accessories/productDetails'; // change in Utils
-
-// const API_URL = 'http://192.168.1.100:3000/accessories/productList'; // tenda Ip address
+import api from '../utils/api'; // Import the Axios instance
 const CardDetail = ({
   route,
 }) => {
@@ -17,20 +15,30 @@ const CardDetail = ({
   const navigation = useNavigation();
 
   useEffect(() => {
-    fetch(`${API_URL}?productId=${productId}`)
-      .then((response) => response.json())
-      .then((responseJson) => {
-        setProduct(responseJson.data[0]);
+    fetchData();
+  }, [])
+
+  const fetchData = () => {
+    const endpoint = 'accessories/productDetails';
+    const url = `${endpoint}?productId=${productId}`;
+
+    api.get(url)
+      .then((response) => {
+        const { data } = response.data;
+        const responseJson = response.data;
+        const headers = response.headers; // Access the headers
+        // console.log(responseJson);
+        setProduct(data[0]);
         setLoading(false);
         setSliderLoading(false);
-        console.log(responseJson.data[0])
+        console.log(data[0]);
       })
       .catch((error) => {
         console.error(error);
         setLoading(false);
         setSliderLoading(false);
       });
-  }, []);
+  }
 
   // add here >>>>>>>>>>>>>>>>>>>>>>>>>>>
   const navigateToHome = () => {
@@ -41,30 +49,56 @@ const CardDetail = ({
 
   }
 
-  const checkSession = async () => {
-    const accessToken = await AsyncStorage.getItem('accessToken');
-    const userId = await AsyncStorage.getItem('userId');
+  // const checkSession = async () => {
+  //   const accessToken = await AsyncStorage.getItem('accessToken');
+  //   const userId = await AsyncStorage.getItem('userId');
 
-    if (accessToken && userId) {
-      // Session exists, the user is logged in with a unique access token
-      // Perform the "Add to Cart" action or continue with the desired logic
-      navigateToHome()
-    } else {
-      // Session does not exist, the user is not logged in or the access token or user ID is missing
-      // Display a message or navigate to the login screen to prompt the user to log in
-      navigateToLogin()
-    }
-  };
+  //   if (accessToken && userId) {
+  //     // Session exists, the user is logged in with a unique access token
+  //     // Perform the "Add to Cart" action or continue with the desired logic
+  //     navigateToHome()
+  //   } else {
+  //     // Session does not exist, the user is not logged in or the access token or user ID is missing
+  //     // Display a message or navigate to the login screen to prompt the user to log in
+  //     navigateToLogin()
+  //   }
+  // };
   // const handleAddToCart = () => {
   //    // Call the session check function
 
   //     // Perform the "Add to Cart" action or continue with the desired logic
   // };
-  const handleAddToCart = () => {
-    // onAddToCart(product)
-    checkSession();
-    navigation.navigate('AddToCartScreen', { product });
+
+
+  const handleAddToCart = async (productId, quantity) => {
+    try {
+      // Retrieve the access token from AsyncStorage
+      const data = await AsyncStorage.getItem('user');
+      const accessToken = JSON.parse(data)?.accessToken;
+
+      // Set the access token in the Authorization header
+      api.defaults.headers.common['Authorization'] = `Bearer ${accessToken}`;
+
+      // Prepare the request body
+      const requestBody = {
+        productId: product.productId,
+        quantity: 1
+      };
+
+      // Make the API request to add the accessory to the cart
+      const response = await api.post('/accessories/addToCart', requestBody);
+
+      // Handle the API response if needed
+      console.log(response.data);
+
+      // Navigate to the 'AddToCartScreen' if necessary
+      navigation.navigate('AddToCartScreen', { product });
+    } catch (error) {
+      // Handle any error that occurred during the API request
+      console.error(error);
+    }
   };
+
   const handleAddToWishList = () => {
 
     navigation.replace('AddToWishList', { product });
@@ -109,7 +143,7 @@ const CardDetail = ({
           <View style={styles.quantityContainer}>
             <Text>Quantity:</Text>
             <View style={styles.quantityInput}>
-              <Text>1</Text>
+              <Text style={{ color: "#000" }}>1</Text>
             </View>
           </View>
 
@@ -124,9 +158,6 @@ const CardDetail = ({
 
           <View style={styles.productDetailsContainer}>
             <Text style={styles.productDetailsTitle}>Product Details</Text>
-            <Text style={styles.productDetailsText}>{product.productDetails}</Text>
-
-            <Text style={styles.productDetailsText}>{product.productDetails}</Text>
             <Text style={styles.productDetailsText}>{product.productDetails}</Text>
           </View>
         </View>
@@ -211,6 +242,7 @@ const styles = StyleSheet.create({
     padding: 5,
     borderRadius: 5,
     marginLeft: 10,
+
   },
   buttonContainer: {
     flexDirection: 'row',

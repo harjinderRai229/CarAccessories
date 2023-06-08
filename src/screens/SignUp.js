@@ -1,36 +1,26 @@
-import React, { useState } from 'react';
-import {
-  ActivityIndicator,
-  Alert,
-  ScrollView,
-  StyleSheet,
-  Text,
-  ToastAndroid,
-  View,
-} from 'react-native';
+import React, { useState, useContext } from 'react';
+import { ActivityIndicator, Alert, ScrollView, StyleSheet, Text, ToastAndroid, TouchableOpacity, View } from 'react-native';
 import CustomTextInput from '../component/CustomTextInput';
-import { useNavigation } from '@react-navigation/native';
-import Button from '../component/CommonButton';
-import axios from 'axios';
-import { connect , useDispatch } from 'react-redux';
-import { setAccessToken, signupSuccess } from '../redux/action/Action';
+import { CommonActions, useNavigation } from '@react-navigation/native';
+import Icon from 'react-native-vector-icons/FontAwesome';
 
+import { AuthContext } from '../AuthContext';
+import Button from '../component/Button';
 
-const SignUp = ({ signupSuccess }) => {
-
-  const dispatch = useDispatch();
-  const [name, setName] = useState('');
+const SignUp = () => {
+  const { signUp } = useContext(AuthContext);
+  const [fname, setFname] = useState('');
   const [lname, setLname] = useState('');
   const [error, setError] = useState('');
   const [mobileNum, setMobile] = useState('');
-
   const [isLoading, setIsLoading] = useState(false);
   const [password, setPassword] = useState('');
   const navigation = useNavigation();
+  const [showPassword, setShowPassword] = useState(false);
 
 
-  const handleSignUp = () => {
-    if (name === '' || lname === '' || mobileNum === '' || password === '') {
+  const handleSignUp = async () => {
+    if (fname === '' || lname === '' || mobileNum === '' || password === '') {
       setError('Please fill in all fields.');
     } else if (mobileNum.length !== 10) {
       setError('Invalid phone number.');
@@ -39,94 +29,31 @@ const SignUp = ({ signupSuccess }) => {
     } else {
       setError('');
 
-      handleCreateUser();
+      try {
+        setIsLoading(true);
+        const response = await signUp(mobileNum, password, fname, lname);
+        if (response.status === 1) {
+          showToast();
+          console.log(response);
+          navigation.navigate('OtpScreen');
+        }
+
+      } catch (error) {
+        Alert.alert('Error', 'Failed to create user. Please try again.');
+        console.log(error);
+      } finally {
+        setIsLoading(false);
+      }
     }
   };
 
   const showToast = () => {
-    ToastAndroid.show('Sending OTP', ToastAndroid.SHORT);
+    ToastAndroid.show('User created successfully.', ToastAndroid.SHORT);
   };
 
-  // const handleCreateUser = async () => {
-  //   setIsLoading(true);
-  //   try {
-  //     const response = await axios.post('http://devcarapi.codezlab.com/user/create', {
-  //       fname: name,
-  //       lname,
-  //       mobile_num: mobileNum,
-  //       password,
-  //     });
-     
-  //     console.log(response.data);
-  //     if (response.data.status === 1) {
-  //       setTimeout(() => {
-  //         navigation.replace('OtpScreen', { userData: response.data.data });
-  //         // showToast();
-  //       }, 4000);
-  //     } else {
-
-  //       // Alert.alert(`${error.response.data}`);
-  //       Alert.alert('Error', 'Failed to create user. Please try again.');
-  //     }
-  //   } catch (error) {
-  //     if (error.response) {
-  //       console.error(error.response.data);
-  //       console.error(error.response.status);
-  //       console.error(error.response.headers);
-  //       Alert.alert('Error', 'Failed to create user. Please try again.');
-  //     } else if (error.request) {
-  //       console.error(error.request);
-  //       Alert.alert('Error', 'No response from the server. Please check your internet connection.');
-  //     } else {
-  //       console.error('Error', error.message);
-  //       Alert.alert('Error', 'An unexpected error occurred. Please try again later.');
-  //     }
-  //   } finally {
-  //     setIsLoading(false);
-  //   }
-  // };
-
-  const handleCreateUser = async () => {
-    setIsLoading(true);
-    try {
-      const response = await axios.post('http://devcarapi.codezlab.com/user/create', {
-        fname: name,
-        lname,
-        mobile_num: mobileNum,
-        password,
-      });
-      console.log('response', response.data)
-      const { accessToken, id, fname, lname, mobile_num } = response.data.data;
-
-      const userObject = {
-        accessToken,
-        id,
-        fname,
-        lname,
-        mobile_num,
-      };
-  
-       const dataToken =await AsyncStorage.setItem('user', JSON.stringify(userObject));
-  
-      console.log(userObject.accessToken);
-      
-      dispatch(setAccessToken(userObject));
-  
-      if (response.data.status === 1) {
-        setTimeout(() => {
-          signupSuccess(response.data.data);
-          navigation.replace('OtpScreen', { userData: response.data.data });
-        }, 4000);
-      } else {
-        Alert.alert('Error', 'Failed to create user. Please try again.');
-      }
-    } catch (error) {
-      // Error handling code...
-    } finally {
-      setIsLoading(false);
-    }
+  const handleTogglePasswordVisibility = () => {
+    setShowPassword(!showPassword);
   };
-  
 
   return (
     <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
@@ -136,14 +63,20 @@ const SignUp = ({ signupSuccess }) => {
         <CustomTextInput
           placeholder={'First name'}
           icon={require('../assets/images/user.png')}
-          value={name}
-          onChangeText={setName}
+          value={fname}
+          iconName={'user'}
+          size={26}
+          color={"#000"}
+          onChangeText={setFname}
         />
 
         <CustomTextInput
           placeholder={'Last name'}
           icon={require('../assets/images/user.png')}
           value={lname}
+          iconName={'user'}
+          size={26}
+          color={"#000"}
           onChangeText={setLname}
         />
 
@@ -153,16 +86,35 @@ const SignUp = ({ signupSuccess }) => {
           keyboardType={'numeric'}
           value={mobileNum}
           maxLength={10}
+          iconName={'mobile'}
+          size={26}
+          color={"#000"}
           onChangeText={setMobile}
         />
 
-        <CustomTextInput
-          placeholder={'Password'}
-          type={'password'}
-          icon={require('../assets/images/lock.png')}
-          value={password}
-          onChangeText={setPassword}
-        />
+<View style={{ width: '100%', }}>
+          <CustomTextInput
+            placeholder={'Password'}
+            value={password}
+            onChangeText={password => setPassword(password)}
+            type={'password' ? !showPassword : showPassword}
+            iconName={'lock'}
+            size={26}
+            color={"#000"}
+            placeholderTextColor={'red'}
+
+          />
+          <TouchableOpacity
+            style={styles.passwordIcon}
+            onPress={handleTogglePasswordVisibility}
+          >
+            <Icon
+              name={showPassword ? 'eye' : 'eye-slash'}
+              size={20}
+              color="gray"
+            />
+          </TouchableOpacity>
+        </View>
 
         {error !== '' && <Text style={styles.error}>{error}</Text>}
 
@@ -173,7 +125,7 @@ const SignUp = ({ signupSuccess }) => {
           onPress={handleSignUp}
           style={error ? null : styles.signUpButton}
         />
-         {isLoading && <ActivityIndicator style={styles.loader} size="small" color="#000000" />}
+        {isLoading && <ActivityIndicator style={styles.loader} size="small" color="#000000" />}
 
         <Text style={[styles.text, styles.signInText]}>
           Already have an account?{' '}
@@ -226,7 +178,12 @@ const styles = StyleSheet.create({
   signUpButton: {
     marginTop: 20,
   },
+  passwordIcon: {
+    position: 'absolute',
+    top: 50,
+    right: 40,
+  },
 });
 
-export default connect(null, { signupSuccess })(SignUp);
+export default SignUp;
 

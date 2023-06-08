@@ -1,9 +1,10 @@
-import React, { useEffect, useState } from 'react';
-import { ActivityIndicator, FlatList, Image, StyleSheet, View } from 'react-native';
+import React, { useCallback, useEffect, useState } from 'react';
+import { ActivityIndicator, FlatList, Image, StyleSheet, TextInput, View } from 'react-native';
 import Card from '../component/Card';
-import { API_URL } from '../utils/helper';
-
-const HomeScreen = () => {
+import api from '../utils/api';
+import { TouchableOpacity } from 'react-native-gesture-handler';
+import Icons from 'react-native-vector-icons/Ionicons';
+const HomeScreen = ({ navigation }) => {
   const [data, setData] = useState([]);
   const [start, setStart] = useState(0);
   const [isLoading, setIsLoading] = useState(false);
@@ -12,12 +13,16 @@ const HomeScreen = () => {
 
   const fetchData = () => {
     setIsLoading(true);
-    const url = `${API_URL}?start=${start}&limit=10`;
+    const endpoint = 'accessories/productList';
+    const url = `${endpoint}?start=${start}&limit=10`;
 
-    fetch(url)
-      .then((response) => response.json())
-      .then((responseJson) => {
-        console.log(responseJson.data[0])
+    api.get(url)
+      .then((response) => {
+        const responseJson = response.data;
+        const headers = response.headers; // Access the headers
+        // console.log(headers); // Log the headers to the console
+        console.log(responseJson);
+
         if (responseJson && responseJson.data) {
           if (responseJson.data.length > 0) {
             setData((prevData) => [...prevData, ...responseJson.data]);
@@ -41,9 +46,12 @@ const HomeScreen = () => {
     setHasMoreData(true);
     fetchData();
   };
+  const handleOpenDrawer = useCallback(() => {
+    navigation.toggleDrawer();
+  }, [navigation]);
 
 
-  
+
   const handleScroll = ({ nativeEvent }) => {
     const { layoutMeasurement, contentOffset, contentSize } = nativeEvent;
     const isCloseToBottom = layoutMeasurement.height + contentOffset.y >= contentSize.height - 20;
@@ -72,7 +80,7 @@ const HomeScreen = () => {
     return (
       <View style={styles.errorContainer}>
         <Image source={require('../assets/images/noData.png')} style={styles.errorImage} />
-        
+
       </View>
     );
   }
@@ -87,9 +95,40 @@ const HomeScreen = () => {
 
   return (
     <View style={styles.container}>
+      <View style={styles.searchContainer}>
+
+        <View style={styles.searchInputContainer}>
+          <TouchableOpacity onPress={handleOpenDrawer} style={{ alignItems: 'center' }}>
+            <Icons name="menu" size={30} color="#000" />
+          </TouchableOpacity>
+          <TextInput
+            style={styles.searchInput}
+            placeholder="Search"
+            // value={searchQuery}
+            placeholderTextColor={'gray'}
+          // onChangeText={(text) => setSearchQuery(text)}
+          />
+          <View
+            style={{
+              // backgroundColor: '#f15c08',
+              height: 40,
+              width: 40,
+              alignItems: 'center',
+              justifyContent: 'center',
+              borderTopRightRadius: 5,
+              borderBottomRightRadius: 5,
+            }}
+          >
+            <TouchableOpacity  >
+              <Icons name="search" size={20} color="#000" style={styles.searchIcon} />
+            </TouchableOpacity>
+          </View>
+        </View>
+
+      </View>
       <FlatList
         data={data}
-        renderItem={({ item }) => <Card item={item} />}
+        renderItem={({ item }) => <Card item={item} navigation={navigation} />}
         keyExtractor={(item, index) => String(index)}
         showsVerticalScrollIndicator={false}
         numColumns={2}
@@ -122,6 +161,31 @@ const styles = StyleSheet.create({
   errorImage: {
     width: 200,
     height: 200,
+  },
+  searchContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    // backgroundColor: '#f5eee4',
+    // padding: 10,
+    marginBottom: 10,
+  },
+  searchInputContainer: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: 'white',
+    paddingLeft: 8,
+    borderRadius: 5,
+    height: 40,
+    // marginLeft: 10,
+    color: '#000',
+    borderWidth: .5
+  },
+  searchInput: {
+    flex: 1,
+  },
+  searchIcon: {
+    marginLeft: 5,
   },
 });
 
