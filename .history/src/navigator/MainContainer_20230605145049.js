@@ -1,0 +1,34 @@
+import * as React from 'react';
+import { createNativeStackNavigator } from '@react-navigation/native-stack';
+import HomeScreen from '../screens/HomeScreen';
+import DetailScreen from '../screens/DetailScreen';
+import CardDetails from '../component/CardDetails';
+import SplashScreen from '../screens/Splash';
+import DrawerNavigator from './drawerNavigator/DrawerNavigator';
+import AddToCartScreen from '../screens/AddToCartScreen';
+import SignUp from '../screens/SignUp';
+import WishList from '../screens/WishList';
+import Login from '../screens/Login';
+import OtpScreen from '../screens/OtpScreen';
+import test from '../screens/test';
+import { useSelector } from 'react-redux';
+const Stack = createNativeStackNavigator();
+
+function MainContainer() {
+    const isAuthenticated = useSelector(state => state.session);
+    return (
+
+        <Stack.Navigator screenOptions={{
+            headerShown:false
+        }}>
+        <Stack.Screen name='Splash' component={SplashScreen}/>
+        <Stack.Screen name='Drawer1' component={DrawerNavigator}/>
+           
+            <Stack.Screen name='test' component={test}/>
+            
+        </Stack.Navigator>
+
+    );
+}
+
+export default MainContainer;
